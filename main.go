@@ -2,8 +2,12 @@ package main
 
 import (
 	"flag"
+	"image"
 	"log"
 	"os"
+
+	_ "image/jpeg"
+	_ "image/png"
 )
 
 func main() {
@@ -23,11 +27,23 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+	defer sourceFile.Close()
 
 	targetFile, err := os.Open(targetPath)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+	defer targetFile.Close()
 
-	log.Println(sourceFile, targetFile)
+	sourceImage, _, err := image.Decode(sourceFile)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	targetImage, _, err := image.Decode(targetFile)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	log.Println(sourceImage, targetImage)
 }
