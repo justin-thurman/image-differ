@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
 )
 
 func main() {
@@ -17,4 +18,16 @@ func main() {
 	if sourcePath == "" || targetPath == "" {
 		log.Fatal("source and target are required")
 	}
+
+	sourceFile, err := os.Open(sourcePath)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	targetFile, err := os.Open(targetPath)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	log.Println(sourceFile, targetFile)
 }
