@@ -81,5 +81,26 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	log.Println(sourceImage, targetImage)
+	// Compare images
+	// FIX: for now, just log whether the images are identical or not
+	imagesDiffer := false
+	var differingX, differingY int
+	bounds := sourceImage.Bounds()
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			sourcePixel := sourceImage.At(x, y)
+			targetPixel := targetImage.At(x, y)
+			if sourcePixel != targetPixel {
+				imagesDiffer = true
+				differingX = x
+				differingY = y
+				break
+			}
+		}
+	}
+	if imagesDiffer {
+		log.Printf("Images differ. First differing pixel from top left: %d, %d\n", differingX, differingY)
+	} else {
+		log.Println("Images are identical")
+	}
 }
