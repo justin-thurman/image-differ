@@ -11,6 +11,9 @@ import (
 )
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	// Parsing CLI args
 	var sourcePath string
 	var targetPath string
 
@@ -23,6 +26,7 @@ func main() {
 		log.Fatal("source and target are required")
 	}
 
+	// Loading image files
 	sourceFile, err := os.Open(sourcePath)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -34,6 +38,32 @@ func main() {
 		log.Fatal(err.Error())
 	}
 	defer targetFile.Close()
+
+	// Decoding images
+	sourceConfig, _, err := image.DecodeConfig(sourceFile)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	_, err = sourceFile.Seek(0, 0)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	targetConfig, _, err := image.DecodeConfig(targetFile)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	_, err = targetFile.Seek(0, 0)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	if sourceConfig.Width > 4000 || sourceConfig.Height > 4000 {
+		log.Fatal("source image too large; ensure image height and width <= 4000")
+	}
+	if targetConfig.Width > 4000 || targetConfig.Height > 4000 {
+		log.Fatal("target image too large; ensure image height and width <= 4000")
+	}
 
 	sourceImage, _, err := image.Decode(sourceFile)
 	if err != nil {
