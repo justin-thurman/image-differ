@@ -64,6 +64,12 @@ func main() {
 	if targetConfig.Width > 4000 || targetConfig.Height > 4000 {
 		log.Fatal("target image too large; ensure image height and width <= 4000")
 	}
+	if sourceConfig.Width != targetConfig.Width || sourceConfig.Height != targetConfig.Height {
+		// TODO: A way to handle diffs of this kind would be nice. Perhaps a method of normalizing the 2D
+		// coordinate plane? But such normalization would be lossy in cases where the number of pixels do
+		// not evenly divide into dimensions of the normalized plane. Would need a way to handle that.
+		log.Fatal("source and target images must have identical dimensions")
+	}
 
 	sourceImage, _, err := image.Decode(sourceFile)
 	if err != nil {
