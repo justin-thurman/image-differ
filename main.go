@@ -100,7 +100,9 @@ func main() {
 	}
 	if imagesDiffer {
 		log.Printf("Images differ. First differing pixel from top left: %d, %d\n", differingX, differingY)
+		os.Exit(1)
 	} else {
 		log.Println("Images are identical")
+		os.Exit(0)
 	}
 }
