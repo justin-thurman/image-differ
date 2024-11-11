@@ -21,9 +21,11 @@ func main() {
 	// Parsing CLI args
 	var sourcePath string
 	var targetPath string
+	var outputPath string
 
 	flag.StringVar(&sourcePath, "source", "", "Path to the source image to diff against.")
 	flag.StringVar(&targetPath, "target", "", "Path to the target image to diff against the source image.")
+	flag.StringVar(&outputPath, "output", "output.gif", "Path to save the output gif (defaults to ./output.gif)")
 
 	flag.Parse()
 
@@ -132,7 +134,7 @@ func main() {
 		Image: []*image.Paletted{sourcePaletted, targetPaletted, diff},
 		Delay: []int{100, 100, 100},
 	}
-	outputFile, err := os.Create("output.gif")
+	outputFile, err := os.Create(outputPath)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
