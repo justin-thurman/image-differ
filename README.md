@@ -1,13 +1,23 @@
-# Description
+# Image Diff Tool
 
-A work-in-progress command-line image diffing utility. Current functionality:
-1. If the two input images differ, logs to STDOUT the first pixel (from top left) that differs. Exit status: 1.
-2. If the two input images do not differ, logs this to STDOUT. Exit status: 0.
+This is a simple command-line tool written in Go to compare two images and generate an animated GIF highlighting the differences.
 
-# Usage
-`image-differ --source path/to/base/image.png --target path/to/target/image.png`
+### Features
+- Compares two images pixel-by-pixel to identify differences.
+- Saves a 3-frame animated GIF showing the original, target, and diff images (with a 20x20 pixel buffer around any differing pixels).
 
-# Limitations
-- Images must be no more than 4000x4000 pixels
-- Images must have identical dimensions
-- Images must be in png, jpg, or jpeg format
+### Usage
+To run the tool, specify the paths to the source and target images. Optionally specify the output path.
+```bash
+./imgdiff --source path/to/source.png --target path/to/target.png [--output output.gif]
+```
+
+#### Arguments
+- `--source`: Path to the source image to compare.
+- `--target`: Path to the target image to compare against the source.
+- `--output` (optional): Output path for the generated GIF (defaults to `output.gif`).
+
+### Notes
+- Both images must have the same dimensions and be no larger than 4000x4000 pixels.
+- Currently, only `.png`, `.jpeg`, and `.gif` formats are supported for input images.
+
