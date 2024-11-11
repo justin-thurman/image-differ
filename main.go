@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"image"
+	"image/gif"
 	"log"
 	"os"
 
@@ -98,11 +99,18 @@ func main() {
 			}
 		}
 	}
-	if imagesDiffer {
-		log.Printf("Images differ. First differing pixel from top left: %d, %d\n", differingX, differingY)
-		os.Exit(1)
-	} else {
+	if !imagesDiffer {
 		log.Println("Images are identical")
 		os.Exit(0)
+	}
+
+	// TODO: 1. Initialize a gif
+	// 2. Convert source and target to Paletted
+	// 3. Add source and target to the gif
+	// 4. Create a blank Paletted and add differing pixels to it
+	// 5. Add the diff to the gif
+	// 6. Write the gif out
+	diffGif := gif.GIF{
+		Image: []*image.Paletted{},
 	}
 }
