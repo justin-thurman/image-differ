@@ -87,19 +87,28 @@ func main() {
 	}
 
 	// Compare images
-	// FIX: for now, just log whether the images are identical or not
-	imagesDiffer := false
-	var differingX, differingY int
 	bounds := sourceImage.Bounds()
+	quantizer := quantize.MedianCutQuantizer{}
+
+	sourcePalette := quantizer.Quantize(make([]color.Color, 0, 256), sourceImage)
+	targetPalette := quantizer.Quantize(make([]color.Color, 0, 256), targetImage)
+
+	// Use targetPalette for diff since we render pixels from the target image only in the gif
+	diff := image.NewPaletted(bounds, targetPalette)
+	imagesDiffer := false
 	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
 			sourcePixel := sourceImage.At(x, y)
 			targetPixel := targetImage.At(x, y)
 			if sourcePixel != targetPixel {
 				imagesDiffer = true
-				differingX = x
-				differingY = y
-				break
+				for dy := -10; dy <= 10; dy++ {
+					for dx := -10; dx <= 10; dx++ {
+						diffColor := targetImage.At(dx+x, dy+y)
+						diff.Set(dx+x, dy+y, diffColor)
+					}
+				}
+				diff.Set(x, y, targetPixel)
 			}
 		}
 	}
@@ -114,10 +123,6 @@ func main() {
 	// 4. Create a blank Paletted and add differing pixels to it
 	// 5. Add the diff to the gif
 	// 6. Write the gif out
-	quantizer := quantize.MedianCutQuantizer{}
-
-	sourcePalette := quantizer.Quantize(make([]color.Color, 0, 256), sourceImage)
-	targetPalette := quantizer.Quantize(make([]color.Color, 0, 256), targetImage)
 
 	sourcePaletted := image.NewPaletted(bounds, sourcePalette)
 	draw.Draw(sourcePaletted, sourcePaletted.Rect, sourceImage, bounds.Min, draw.Over)
@@ -126,10 +131,9 @@ func main() {
 	draw.Draw(targetPaletted, targetPaletted.Rect, targetImage, bounds.Min, draw.Over)
 
 	diffGif := gif.GIF{
-		Image: []*image.Paletted{sourcePaletted, targetPaletted},
-		Delay: []int{100, 100},
+		Image: []*image.Paletted{sourcePaletted, targetPaletted, diff},
+		Delay: []int{100, 100, 100},
 	}
-	log.Println(differingX, differingY)
 	outputFile, err := os.Create("output.gif")
 	if err != nil {
 		log.Fatal(err.Error())
