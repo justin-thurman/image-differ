@@ -88,41 +88,39 @@ func main() {
 
 	// Compare images
 	bounds := sourceImage.Bounds()
-	quantizer := quantize.MedianCutQuantizer{}
+	differingPixels := make(map[image.Point]struct{})
 
-	sourcePalette := quantizer.Quantize(make([]color.Color, 0, 256), sourceImage)
-	targetPalette := quantizer.Quantize(make([]color.Color, 0, 256), targetImage)
-
-	// Use targetPalette for diff since we render pixels from the target image only in the gif
-	diff := image.NewPaletted(bounds, targetPalette)
-	imagesDiffer := false
 	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
 			sourcePixel := sourceImage.At(x, y)
 			targetPixel := targetImage.At(x, y)
 			if sourcePixel != targetPixel {
-				imagesDiffer = true
+				// Draw a 20x20 square around each differing pixel
 				for dy := -10; dy <= 10; dy++ {
 					for dx := -10; dx <= 10; dx++ {
-						diffColor := targetImage.At(dx+x, dy+y)
-						diff.Set(dx+x, dy+y, diffColor)
+						differingPixels[image.Point{dx + x, dy + y}] = struct{}{}
 					}
 				}
-				diff.Set(x, y, targetPixel)
 			}
 		}
 	}
-	if !imagesDiffer {
+	if len(differingPixels) == 0 {
 		log.Println("Images are identical")
 		os.Exit(0)
 	}
 
-	// TODO: 1. Initialize a gif
-	// 2. Convert source and target to Paletted
-	// 3. Add source and target to the gif
-	// 4. Create a blank Paletted and add differing pixels to it
-	// 5. Add the diff to the gif
-	// 6. Write the gif out
+	// Create the gif showing the diff
+	quantizer := quantize.MedianCutQuantizer{}
+	sourcePalette := quantizer.Quantize(make([]color.Color, 0, 256), sourceImage)
+	targetPalette := quantizer.Quantize(make([]color.Color, 0, 256), targetImage)
+
+	// Use targetPalette for diff since we render pixels from the target image only in the gif
+	diff := image.NewPaletted(bounds, targetPalette)
+
+	for point := range differingPixels {
+		diffColor := targetImage.At(point.X, point.Y)
+		diff.Set(point.X, point.Y, diffColor)
+	}
 
 	sourcePaletted := image.NewPaletted(bounds, sourcePalette)
 	draw.Draw(sourcePaletted, sourcePaletted.Rect, sourceImage, bounds.Min, draw.Over)
