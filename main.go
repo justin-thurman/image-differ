@@ -3,9 +3,13 @@ package main
 import (
 	"flag"
 	"image"
+	"image/color"
+	"image/draw"
 	"image/gif"
 	"log"
 	"os"
+
+	"github.com/ericpauley/go-quantize/quantize"
 
 	_ "image/jpeg"
 	_ "image/png"
@@ -110,7 +114,25 @@ func main() {
 	// 4. Create a blank Paletted and add differing pixels to it
 	// 5. Add the diff to the gif
 	// 6. Write the gif out
+	quantizer := quantize.MedianCutQuantizer{}
+
+	sourcePalette := quantizer.Quantize(make([]color.Color, 0, 256), sourceImage)
+	targetPalette := quantizer.Quantize(make([]color.Color, 0, 256), targetImage)
+
+	sourcePaletted := image.NewPaletted(bounds, sourcePalette)
+	draw.Draw(sourcePaletted, sourcePaletted.Rect, sourceImage, bounds.Min, draw.Over)
+
+	targetPaletted := image.NewPaletted(bounds, targetPalette)
+	draw.Draw(targetPaletted, targetPaletted.Rect, targetImage, bounds.Min, draw.Over)
+
 	diffGif := gif.GIF{
-		Image: []*image.Paletted{},
+		Image: []*image.Paletted{sourcePaletted, targetPaletted},
+		Delay: []int{100, 100},
 	}
+	log.Println(differingX, differingY)
+	outputFile, err := os.Create("output.gif")
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	gif.EncodeAll(outputFile, &diffGif)
 }
